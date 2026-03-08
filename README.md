@@ -47,3 +47,4 @@ npm run dev
 ```bash
 artillery run load-test.yml
 ```
+and done
