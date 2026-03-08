@@ -1,17 +1,24 @@
 import { createClient } from 'redis';
 
-// Create a Redis client instance
-const redisClient = createClient();
+// Use the Render environment variable, or fallback to local for development
+const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 
-// Handle Redis connection errors
-redisClient.on('error', (err) => {
-    console.error('Redis Error:', err);
+const redisClient = createClient({
+    url: redisUrl
 });
 
-// Function to connect to Redis
-const connectRedis = async () => {
-    await redisClient.connect();
-    console.log('✅ Redis Connected');
+redisClient.on('error', (err) => console.log('Redis Client Error', err));
+
+export const connectRedis = async () => {
+    try {
+        await redisClient.connect();
+        console.log('✅ Connected to Redis successfully');
+    } catch (error) {
+        console.error('❌ Redis connection failed:', error);
+        // Important for Render: if Redis fails, we want the app to exit 
+        // so Render knows the deploy wasn't successful.
+        process.exit(1); 
+    }
 };
 
-export { redisClient, connectRedis };
+export default redisClient;
